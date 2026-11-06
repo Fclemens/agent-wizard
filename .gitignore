@@ -16,3 +16,10 @@ Thumbs.db
 *.log
 dist/
 build/
+
+# Node
+node_modules/
+*.tsbuildinfo
+
+# Recorded run traces
+runs/

@@ -1,0 +1,21 @@
+{
+  "name": "agent-wizard",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "concurrently -k -n server,web -c blue,magenta \"npm run dev -w @agent-wizard/server\" \"npm run dev -w @agent-wizard/web\"",
+    "build": "npm run build -w @agent-wizard/web",
+    "start": "npm run start -w @agent-wizard/server",
+    "cli": "npm run cli -w @agent-wizard/server --",
+    "test": "npm run test -w @agent-wizard/core",
+    "typecheck": "npm run typecheck --workspaces --if-present"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "typescript": "^5.9.3"
+  }
+}
