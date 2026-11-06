@@ -69,7 +69,8 @@ export const calculatorTool: Tool = {
   },
   run(input) {
     const expression = String(input.expression ?? "");
-    return String(evaluateArithmetic(expression));
+    // Round away float noise (0.1 + 0.2 -> 0.3) so models don't trip over it.
+    return String(Number(evaluateArithmetic(expression).toPrecision(12)));
   },
 };
 

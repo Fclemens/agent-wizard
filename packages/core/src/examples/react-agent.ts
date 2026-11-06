@@ -1,7 +1,8 @@
 import { END, type BaseState, type GraphDefinition, type MockReply } from "../graph";
 import { llmNode, routeOnToolCalls, toolNode } from "../nodes";
-import { NOTES, builtinTools } from "../tools";
+import { builtinTools } from "../tools";
 import type { LLMRequest } from "../types";
+import { guessToolCalls } from "./mock-helpers";
 
 /**
  * The canonical agentic loop:
@@ -72,16 +73,7 @@ function mockAgent(req: LLMRequest): MockReply {
   }
 
   const question = last?.role === "user" ? last.text : "";
-  const lower = question.toLowerCase();
-  const calls: MockReply["toolCalls"] = [];
-
-  const math = question.match(/[\d(][\d\s.+\-*/^%()]*[\d)]/g)?.filter((m) => /[+\-*/^%]/.test(m));
-  for (const expression of math ?? []) calls.push({ name: "calculator", input: { expression: expression.trim() } });
-
-  if (/\b(time|date|today|now)\b/.test(lower)) calls.push({ name: "get_current_time", input: {} });
-
-  const topics = Object.keys(NOTES).filter((t) => lower.includes(t));
-  for (const query of topics) calls.push({ name: "search_notes", input: { query } });
+  const calls = guessToolCalls(question);
   if (calls.length === 0) {
     const subject = question.replace(/^(tell me about|what is|what are|explain)\s+/i, "").replace(/[?.!]+$/, "");
     calls.push({ name: "search_notes", input: { query: subject } });

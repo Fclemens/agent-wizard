@@ -90,8 +90,10 @@ function Inner({ graph, view }: { graph: GraphDescription; view: RunView }) {
     const k = edgeKey(e.from, e.to);
     const count = view.edgeCounts[k] ?? 0;
     const span = (depth.get(e.to) ?? 0) - (depth.get(e.from) ?? 0);
-    // Back edges loop around the right side; edges that skip a row go around the left.
-    const route = span <= 0 ? "right" : span > 1 ? "left" : "down";
+    // Back edges and row-skipping edges go around the outside, on the side of
+    // the node they leave from, so they don't cross sibling nodes.
+    const side = (positions[e.from]?.x ?? 0) < 0 ? "left" : "right";
+    const route = span === 1 ? "down" : span <= 0 ? side : (positions[e.from]?.x ?? 0) > 0 ? "right" : "left";
     const isLast = view.lastEdge === k && view.status !== "idle";
     const label = [e.label, count > 0 ? `×${count}` : ""].filter(Boolean).join("  ");
     return {
@@ -126,8 +128,10 @@ function Inner({ graph, view }: { graph: GraphDescription; view: RunView }) {
 }
 
 export function GraphView(props: { graph: GraphDescription; view: RunView }) {
+  // Remount per graph: React Flow won't re-measure nodes whose ids carry over
+  // (start/end), which would leave them invisible.
   return (
-    <ReactFlowProvider>
+    <ReactFlowProvider key={props.graph.id}>
       <Inner {...props} />
     </ReactFlowProvider>
   );

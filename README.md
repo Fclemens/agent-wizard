@@ -70,11 +70,18 @@ start ──▶ agent ──(has tool calls)──▶ tools ┘
 
 ## Example graphs
 
-- **`react-agent`**: the canonical agent ⇄ tools loop with a calculator, a clock, and an offline
-  notes lookup. Try "Tell me about vector databases." to see a tool error fed back to the model
-  instead of crashing the run.
-- **`reflection`**: writer → critic → (revise | end). The loop condition lives in custom state
-  (`approved`, `revision`) rather than in the messages.
+Listed roughly from simplest to most complex. Each one runs offline on the Mock provider.
+
+| Graph | Pattern | What to look at |
+|---|---|---|
+| `intent-router` | **Routing** | One classifier call picks one of three specialists. No loop: just a conditional branch. |
+| `prompt-chain` | **Prompt chaining + gate** | outline → *code check* → draft → polish. The gate is plain code (exactly 3 bullets) that sends a bad outline back with feedback. |
+| `react-agent` | **ReAct tool loop** | The canonical agent ⇄ tools cycle. "Tell me about vector databases." shows a tool error fed back instead of crashing. |
+| `reflection` | **Evaluator-optimizer** | Writer → critic → revise, until `APPROVED` or 3 revisions. The loop condition lives in custom state. |
+| `validated-extraction` | **Self-correction** | Extract JSON, validate it with code, append the exact errors as a user message, retry. Watch the message history grow. |
+| `guardrails` | **Tool-call policy** | A code guard sits between the model and its tools: external emails and deletions are blocked, the model is told why, and it adapts. |
+| `plan-execute` | **Plan & execute** | Planner writes steps; executor ⇄ tools is the inner loop for one step; record → executor is the outer loop over the plan. |
+| `supervisor` | **Multi-agent supervisor** | An LLM supervisor delegates to researcher/mathematician sub-agents, each a full tool loop inside one node (`runSubagent`). |
 
 ## Writing your own graph
 
@@ -102,7 +109,8 @@ export const myGraph: GraphDefinition<BaseState> = {
 
 Register it in `exampleGraphs` in `packages/core/src/index.ts` and it appears in the UI and CLI.
 For custom logic, use `functionNode` and call the model with `ctx.callLLM(...)`, which traces the
-request and response automatically.
+request and response automatically. Other helpers: `executeToolCalls` (run and trace tool calls),
+`runSubagent` (a whole agent loop inside one node), `parseList` and `extractJson` (parse model text).
 
 ## Repository layout
 

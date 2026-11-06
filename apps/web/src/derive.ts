@@ -108,7 +108,7 @@ export function layout(graph: GraphDescription) {
     rows.set(d, [...(rows.get(d) ?? []), n.id]);
   }
   const positions: Record<string, { x: number; y: number }> = {};
-  const colWidth = 220;
+  const colWidth = 300;
   const rowHeight = 130;
   for (const [d, ids] of rows) {
     ids.forEach((id, i) => {
